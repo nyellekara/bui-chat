@@ -4,6 +4,8 @@ The harness uses one deterministic fixture: a 1080×720 window, 500 alternating 
 
 ## Results policy
 
+Tauri and GPUI now build in release mode and use `measure-process.ps1` for Windows process-tree sampling, including WebView child processes. `resourceMetrics` reports time-weighted average CPU (100% means one logical core), sampled peak CPU, average/peak working set, peak private bytes, memory change from first to last sample, and peak process count. Raw samples accompany each result. Sampling covers launch through exit; memory change is not a leak measurement. Working sets summed across processes may double-count shared pages. These measurements are not yet directly interchangeable with the older BUI/Electron in-process counters. Idle and message-count scaling tests are still outstanding.
+
 Only results produced by the current harness revision should be compared. Older startup/stream tables were exploratory smoke measurements and are intentionally superseded because they did not aggregate Electron's renderer process or use equivalent update paths. The workload is synthetic and measures runtime behavior, not model/network latency.
 
 ## Files

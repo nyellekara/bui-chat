@@ -52,23 +52,25 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo run --manifest-path bench/tauri/src-tauri/Cargo.toml
-        env:
-          BENCH_OUT: ${{ github.workspace }}/bench/tauri/tauri-result.json
+      - run: cargo build --release --locked --manifest-path bench/tauri/src-tauri/Cargo.toml
+      - shell: pwsh
+        run: ./bench/measure-process.ps1 -Executable bench/tauri/src-tauri/target/release/bui-runtime-bench-tauri.exe -Output bench/tauri/tauri-result.json
       - uses: actions/upload-artifact@v4
         with:
           name: tauri-result
-          path: bench/tauri/tauri-result.json
+          path: bench/tauri/tauri-result.json*
+          if-no-files-found: error
 
   gpui:
     name: GPUI
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo run --manifest-path bench/gpui/Cargo.toml
-        env:
-          BENCH_OUT: ${{ github.workspace }}/bench/gpui/gpui-result.json
+      - run: cargo build --release --manifest-path bench/gpui/Cargo.toml
+      - shell: pwsh
+        run: ./bench/measure-process.ps1 -Executable bench/gpui/target/release/bui-runtime-bench-gpui.exe -Output bench/gpui/gpui-result.json
       - uses: actions/upload-artifact@v4
         with:
           name: gpui-result
-          path: bench/gpui/gpui-result.json
+          path: bench/gpui/gpui-result.json*
+          if-no-files-found: error
