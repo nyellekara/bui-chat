@@ -9,7 +9,7 @@ let cpuSamples = []
 let cpuSampler = null
 
 function sampleElectronCpu() {
-  const total = app.getAppMetrics().reduce((sum, metric) => sum + ((metric.cpu && metric.cpu.percent) || 0), 0)
+  const total = app.getAppMetrics().reduce((sum, metric) => sum + ((metric.cpu && metric.cpu.percentCPUUsage) || 0), 0)
   cpuSamples.push(total)
 }
 fs.writeFileSync(path.join(process.cwd(), 'electron-started.txt'), `started ${process.pid}\n`)
@@ -20,7 +20,7 @@ function writeResult(extra = {}) {
   const appMetrics = app.getAppMetrics()
   const aggregate = appMetrics.reduce((total, metric) => ({
     rssBytes: total.rssBytes + ((metric.memory && metric.memory.workingSetSize) || 0) * 1024,
-    cpuPercent: total.cpuPercent + ((metric.cpu && metric.cpu.percent) || 0),
+    cpuPercent: total.cpuPercent + ((metric.cpu && metric.cpu.percentCPUUsage) || 0),
     processCount: total.processCount + 1,
   }), { rssBytes: 0, cpuPercent: 0, processCount: 0 })
   const result = {
