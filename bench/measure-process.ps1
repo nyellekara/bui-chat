@@ -18,7 +18,7 @@ while (-not $appProcess.HasExited) {
         foreach ($processId in $known.Keys) { Stop-Process -Id $processId -ErrorAction SilentlyContinue }
         throw 'Benchmark timed out'
     }
-    $snapshot = @(Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId)
+    $snapshot = @(Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, KernelModeTime, UserModeTime)
     do {
         $added = $false
         foreach ($entry in $snapshot) {
@@ -34,14 +34,20 @@ while (-not $appProcess.HasExited) {
         $p = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($null -eq $p) { continue }
         try {
-            $cpu = $p.TotalProcessorTime.TotalSeconds
+            $entry = $snapshot | Where-Object { [int]$_.ProcessId -eq $processId } | Select-Object -First 1
+            if ($null -eq $entry) { continue }
+            if ($null -eq $entry.KernelModeTime -or $null -eq $entry.UserModeTime) {
+                throw "CPU counters unavailable for process $processId"
+            }
+            # Win32_Process exposes cumulative CPU time in 100-nanosecond units.
+            $cpu = ([double]$entry.KernelModeTime + [double]$entry.UserModeTime) / 10000000.0
             $before = if ($lastCpu.ContainsKey($processId)) { $lastCpu[$processId] } else { 0.0 }
             $cpuDelta += [Math]::Max(0, $cpu - $before)
             $lastCpu[$processId] = $cpu
             $rss += $p.WorkingSet64
             $private += $p.PrivateMemorySize64
             $count++
-        } catch { continue }
+        } catch { throw }
     }
     $now = $timer.Elapsed.TotalSeconds
     if ($count -gt 0) {
@@ -55,6 +61,7 @@ $appProcess.WaitForExit()
 if ($appProcess.ExitCode -ne 0) { throw "Benchmark exited with $($appProcess.ExitCode)" }
 if (-not (Test-Path -LiteralPath $env:BENCH_OUT)) { throw 'Benchmark produced no result' }
 if ($samples.Count -lt 2) { throw 'Insufficient resource samples' }
+if (($samples | Measure-Object cpuSeconds -Sum).Sum -le 0) { throw 'No CPU activity captured; resource counters are invalid' }
 $result = Get-Content -LiteralPath $env:BENCH_OUT -Raw | ConvertFrom-Json
 $duration = ($samples | Measure-Object intervalSeconds -Sum).Sum
 $metrics = [ordered]@{
