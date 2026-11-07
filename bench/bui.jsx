@@ -14,6 +14,26 @@ const fixture = Array.from({ length: 500 }, (_, index) => ({
 }))
 
 function App() {
+  return (
+    <div style={{ width: '100%', height: '100%', background: '#0f1012', color: '#f2f2f4', display: 'flex', flexDirection: 'column', fontFamily: 'Segoe UI' }}>
+      <div style={{ height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', background: '#111214' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 650 }}><div style={{ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: '#e6e6e8', color: '#17181b', fontWeight: 800 }}>B</div><span>Runtime Benchmark</span></div>
+        <span style={{ color: '#8f929b', fontSize: 11 }}>same fixture · 500 messages · 10,000 streamed tokens</span>
+      </div>
+      <div style={{ flex: 1, minHeight: 0, maxWidth: 820, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {fixture.map((item, index) => index === fixture.length - 1
+            ? <StreamingAssistant key={item.text} item={item} />
+            : <div key={item.text} style={{ maxWidth: '86%', alignSelf: item.role === 'user' ? 'flex-end' : 'flex-start', padding: '12px 15px', borderRadius: 15, background: item.role === 'user' ? '#e9e9eb' : '#1d1e22', color: item.role === 'user' ? '#1c1d20' : '#f2f2f4' }}>{item.text}</div>)}
+        </div>
+        <div style={{ margin: '10px 24px 22px', padding: 14, borderRadius: 18, background: '#1d1e22' }}><textarea style={{ width: '100%', minHeight: 48, background: 'transparent', color: '#fff', border: 0 }} placeholder="Streaming benchmark input…" /></div>
+      </div>
+    </div>
+  )
+}
+
+function StreamingAssistant({ item }) {
+  const [text, setText] = useState(item.text)
   const [streamed, setStreamed] = useState(0)
   const [chunks, setChunks] = useState(0)
   const streamStarted = React.useRef(null)
@@ -23,6 +43,7 @@ function App() {
     readyAt.current = performance.now()
     streamStarted.current = performance.now()
     const timer = setInterval(() => {
+      setText((value) => `${value} token`)
       setStreamed((value) => Math.min(10000, value + 20))
       setChunks((value) => value + 1)
     }, 16)
@@ -48,19 +69,10 @@ function App() {
   }, [streamed])
 
   return (
-    <div style={{ width: '100%', height: '100%', background: '#0f1012', color: '#f2f2f4', display: 'flex', flexDirection: 'column', fontFamily: 'Segoe UI' }}>
-      <div style={{ height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 22px', background: '#111214' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 650 }}><div style={{ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, background: '#e6e6e8', color: '#17181b', fontWeight: 800 }}>B</div><span>Runtime Benchmark</span></div>
-        <span style={{ color: '#8f929b', fontSize: 11 }}>same fixture · 500 messages · 10,000 streamed tokens</span>
-      </div>
-      <div style={{ flex: 1, minHeight: 0, maxWidth: 820, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {fixture.map((item) => <div key={item.text} style={{ maxWidth: '86%', alignSelf: item.role === 'user' ? 'flex-end' : 'flex-start', padding: '12px 15px', borderRadius: 15, background: item.role === 'user' ? '#e9e9eb' : '#1d1e22', color: item.role === 'user' ? '#1c1d20' : '#f2f2f4' }}>{item.text}</div>)}
-          <div style={{ color: '#8f929b', fontSize: 12 }}>Streaming tokens: {streamed}</div>
-        </div>
-        <div style={{ margin: '10px 24px 22px', padding: 14, borderRadius: 18, background: '#1d1e22' }}><textarea style={{ width: '100%', minHeight: 48, background: 'transparent', color: '#fff', border: 0 }} placeholder="Streaming benchmark input…" /></div>
-      </div>
-    </div>
+    <>
+      <div style={{ maxWidth: '86%', alignSelf: 'flex-start', padding: '12px 15px', borderRadius: 15, background: '#1d1e22', color: '#f2f2f4' }}>{text}</div>
+      <div style={{ color: '#8f929b', fontSize: 12 }}>Streaming tokens: {streamed}</div>
+    </>
   )
 }
 
