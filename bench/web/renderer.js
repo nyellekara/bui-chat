@@ -18,6 +18,7 @@ for (const item of fixture) {
 }
 messages.scrollTop = messages.scrollHeight
 
+const readyAt = performance.now()
 let streamed = 0
 let chunk = 0
 const streamStart = performance.now()
@@ -30,7 +31,7 @@ const timer = setInterval(() => {
   if (streamed >= 10000) {
     clearInterval(timer)
     window.__benchmark = {
-      startupMs: performance.now() - startedAt,
+      startupMs: readyAt - startedAt,
       streamMs: performance.now() - streamStart,
       streamedTokens: streamed,
       streamChunks: chunk,

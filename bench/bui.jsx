@@ -5,7 +5,7 @@ const path = require('node:path')
 const { render, useState, useEffect } = require('@blender-ui/react')
 
 const OUT = process.env.BENCH_OUT || path.join(process.cwd(), 'bui-result.json')
-const startedAt = process.hrtime.bigint()
+const startedAt = performance.now()
 const fixture = Array.from({ length: 500 }, (_, index) => ({
   role: index % 2 === 0 ? 'user' : 'assistant',
   text: index % 2 === 0
@@ -17,8 +17,10 @@ function App() {
   const [streamed, setStreamed] = useState(0)
   const [chunks, setChunks] = useState(0)
   const streamStarted = React.useRef(null)
+  const readyAt = React.useRef(null)
 
   useEffect(() => {
+    readyAt.current = performance.now()
     streamStarted.current = performance.now()
     const timer = setInterval(() => {
       setStreamed((value) => Math.min(10000, value + 20))
@@ -32,7 +34,7 @@ function App() {
     const result = {
       runtime: 'bui',
       pid: process.pid,
-      startupMs: Number(process.hrtime.bigint() - startedAt) / 1e6,
+      startupMs: readyAt.current - startedAt,
       streamMs: performance.now() - streamStarted.current,
       streamedTokens: streamed.value,
       streamChunks: chunks.value,

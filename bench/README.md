@@ -1,6 +1,6 @@
 # Cross-runtime benchmark harness
 
-The harness uses one deterministic fixture: a 1080×720 window, 500 alternating user/assistant messages, and a 10,000-token stream at a 16 ms cadence. It records startup time, stream time, token count, message count, and runtime memory/CPU where the runtime exposes those counters.
+The harness uses one deterministic fixture: a 1080×720 window, 500 alternating user/assistant messages, and a 10,000-token stream at a 16 ms cadence. `startupMs` measures fixture/UI construction until streaming begins; `streamMs` measures the stream only. It also records token count, message count, and runtime memory/CPU where the runtime exposes those counters.
 
 ## Current measured results
 

@@ -13,6 +13,7 @@ struct Benchmark {
     streamed: usize,
     chunks: usize,
     started: Instant,
+    ready: Instant,
     stream_started: Instant,
     output: PathBuf,
 }
@@ -57,7 +58,8 @@ fn main() {
         let started = Instant::now();
         cx.open_window(WindowOptions { window_bounds: Some(WindowBounds::Windowed(bounds)), ..Default::default() }, move |_, cx| {
             let messages = (0..500).map(|i| (i % 2 == 0, format!("{} message {}: native retained UI benchmark fixture.", if i % 2 == 0 { "User" } else { "Assistant" }, i).into())).collect();
-            let entity = cx.new(|_| Benchmark { messages, streamed: 0, chunks: 0, started, stream_started: Instant::now(), output: output.clone() });
+            let ready = Instant::now();
+            let entity = cx.new(|_| Benchmark { messages, streamed: 0, chunks: 0, started, ready, stream_started: Instant::now(), output: output.clone() });
             let task_entity = entity.clone();
             cx.spawn(async move |cx| {
                 let stream_started = Instant::now();
@@ -66,7 +68,7 @@ fn main() {
                     task_entity.update(cx, |view, cx| { view.streamed += 20; view.chunks += 1; view.stream_started = stream_started; cx.notify(); }).ok();
                 }
                 task_entity.update(cx, |view, _| {
-                    let result = serde_json::json!({ "runtime": "gpui", "pid": std::process::id(), "startupMs": view.started.elapsed().as_secs_f64() * 1000.0, "streamMs": view.stream_started.elapsed().as_secs_f64() * 1000.0, "streamedTokens": view.streamed, "streamChunks": view.chunks, "fixtureMessages": view.messages.len() });
+                    let result = serde_json::json!({ "runtime": "gpui", "pid": std::process::id(), "startupMs": view.ready.duration_since(view.started).as_secs_f64() * 1000.0, "streamMs": view.stream_started.elapsed().as_secs_f64() * 1000.0, "streamedTokens": view.streamed, "streamChunks": view.chunks, "fixtureMessages": view.messages.len() });
                     let _ = fs::write(&view.output, serde_json::to_string_pretty(&result).unwrap());
                 }).ok();
                 // AsyncApp does not expose quit directly; hop back to the
