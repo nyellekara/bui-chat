@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.tmp
+*.raw
+*.log
+docs_cache/
+bui-chat.exe
+bench/**/target/
+bench/*-result.json
+bench/electron/*-result.json
+bench/electron/electron-started.txt
+gitmeta/
+bench/tauri/src-tauri/gen/

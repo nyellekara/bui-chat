@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@blender-ui/react",
+    "module": "commonjs",
+    "target": "es2022"
+  }
+}
