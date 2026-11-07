@@ -69,7 +69,9 @@ fn main() {
                     let result = serde_json::json!({ "runtime": "gpui", "pid": std::process::id(), "startupMs": view.started.elapsed().as_secs_f64() * 1000.0, "streamMs": view.stream_started.elapsed().as_secs_f64() * 1000.0, "streamedTokens": view.streamed, "streamChunks": view.chunks, "fixtureMessages": view.messages.len() });
                     let _ = fs::write(&view.output, serde_json::to_string_pretty(&result).unwrap());
                 }).ok();
-                cx.quit();
+                // AsyncApp does not expose quit directly; hop back to the
+                // application context before requesting shutdown.
+                let _ = cx.update(|cx| cx.quit());
             }).detach();
             entity
         }).unwrap();
