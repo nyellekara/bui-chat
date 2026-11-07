@@ -6,6 +6,17 @@ const { render, useState, useEffect } = require('@blender-ui/react')
 
 const OUT = process.env.BENCH_OUT || path.join(process.cwd(), 'bui-result.json')
 const startedAt = performance.now()
+const cpuStartedAt = process.cpuUsage()
+const cpuSamples = []
+let previousCpu = process.cpuUsage()
+let previousCpuAt = performance.now()
+const cpuSampler = setInterval(() => {
+  const now = performance.now()
+  const delta = process.cpuUsage(previousCpu)
+  previousCpu = process.cpuUsage()
+  cpuSamples.push(((delta.user + delta.system) / 1000) / Math.max(1, now - previousCpuAt) * 100)
+  previousCpuAt = now
+}, 100)
 const fixture = Array.from({ length: 500 }, (_, index) => ({
   role: index % 2 === 0 ? 'user' : 'assistant',
   text: index % 2 === 0
@@ -38,9 +49,11 @@ function StreamingAssistant({ item }) {
   const [chunks, setChunks] = useState(0)
   const streamStarted = React.useRef(null)
   const readyAt = React.useRef(null)
+  const baselineRss = React.useRef(0)
 
   useEffect(() => {
     readyAt.current = performance.now()
+    baselineRss.current = process.memoryUsage().rss
     streamStarted.current = performance.now()
     const timer = setInterval(() => {
       setText((value) => `${value} token`)
@@ -52,6 +65,8 @@ function StreamingAssistant({ item }) {
 
   useEffect(() => {
     if (streamed.value < 10000) return
+    clearInterval(cpuSampler)
+    const cpu = process.cpuUsage(cpuStartedAt)
     const result = {
       runtime: 'bui',
       pid: process.pid,
@@ -63,6 +78,13 @@ function StreamingAssistant({ item }) {
       rssBytes: process.memoryUsage().rss,
       heapUsedBytes: process.memoryUsage().heapUsed,
       cpu: process.cpuUsage(),
+      metrics: {
+        totalRssBytes: process.memoryUsage().rss,
+        memoryDeltaBytes: process.memoryUsage().rss - baselineRss.current,
+        averageCpuPercent: cpuSamples.length ? cpuSamples.reduce((sum, value) => sum + value, 0) / cpuSamples.length : 0,
+        peakCpuPercent: cpuSamples.length ? Math.max(...cpuSamples) : 0,
+        processCount: 1,
+      },
     }
     fs.writeFileSync(OUT, JSON.stringify(result, null, 2))
     setTimeout(() => runtime.app.quit(), 250)

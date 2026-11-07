@@ -1,20 +1,10 @@
 # Cross-runtime benchmark harness
 
-The harness uses one deterministic fixture: a 1080×720 window, 500 alternating user/assistant messages, and a 10,000-token stream at a 16 ms cadence. `startupMs` measures fixture/UI construction until streaming begins; `streamMs` measures the stream only. It also records token count, message count, and runtime memory/CPU where the runtime exposes those counters.
+The harness uses one deterministic fixture: a 1080×720 window, 500 alternating user/assistant messages, and a 10,000-token stream at a 16 ms cadence. The primary comparison is resource usage: `metrics.totalRssBytes` (total runtime memory), `metrics.averageCpuPercent`/`metrics.peakCpuPercent` (CPU cost), `metrics.memoryDeltaBytes` (growth), and `metrics.processCount`. `startupMs` and `streamMs` remain diagnostic timing fields, not the headline score.
 
-## Current measured results
+## Results policy
 
-These are single-run smoke measurements on the current Windows machine, not a statistical performance study yet:
-
-| Runtime | Startup | Stream | RSS | Result |
-| --- | ---: | ---: | ---: | --- |
-| BUI software raster | 8,575.7 ms | 8,475.6 ms | 101.3 MiB | completed |
-| BUI Direct3D 11 | 9,105.8 ms | 8,891.6 ms | 125.2 MiB | completed |
-| Electron | — | — | — | Electron binary exited before loading the benchmark entrypoint in this sandbox |
-| Tauri | — | — | — | dependency build started but failed when the machine ran out of disk/paging space |
-| GPUI | — | — | — | reduced-feature `cargo check` passed; executable link was stopped because disk space fell below 1 GiB |
-
-The BUI run was repeated once per mode. The workload itself is intentionally synthetic and measures rendering/runtime behavior, not model/network latency.
+Only results produced by the current harness revision should be compared. Older startup/stream tables were exploratory smoke measurements and are intentionally superseded because they did not aggregate Electron's renderer process or use equivalent update paths. The workload is synthetic and measures runtime behavior, not model/network latency.
 
 ## Files
 
