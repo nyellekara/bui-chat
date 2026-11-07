@@ -1,0 +1,72 @@
+name: Runtime benchmark
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bui:
+    name: BUI (${{ matrix.mode }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [cpu, gpu]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - shell: pwsh
+        run: |
+          $env:BENCH_OUT = "bench/bui-${{ matrix.mode }}-result.json"
+          if ('${{ matrix.mode }}' -eq 'gpu') { $env:BUI_GPU = '1' }
+          node --import tsx bench/bui.jsx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bui-${{ matrix.mode }}-result
+          path: bench/bui-${{ matrix.mode }}-result.json
+
+  electron:
+    name: Electron
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm install --no-fund --no-audit
+        working-directory: bench/electron
+      - run: node_modules/.bin/electron.cmd main.cjs
+        working-directory: bench/electron
+      - uses: actions/upload-artifact@v4
+        with:
+          name: electron-result
+          path: bench/electron/electron-result.json
+
+  tauri:
+    name: Tauri
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo run --manifest-path bench/tauri/src-tauri/Cargo.toml
+        env:
+          BENCH_OUT: ${{ github.workspace }}/bench/tauri/tauri-result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-result
+          path: bench/tauri/tauri-result.json
+
+  gpui:
+    name: GPUI
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo run --manifest-path bench/gpui/Cargo.toml
+        env:
+          BENCH_OUT: ${{ github.workspace }}/bench/gpui/gpui-result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gpui-result
+          path: bench/gpui/gpui-result.json

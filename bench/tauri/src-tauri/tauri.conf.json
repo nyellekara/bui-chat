@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BUI Runtime Benchmark Tauri",
+  "version": "0.1.0",
+  "identifier": "com.bui.runtime-bench.tauri",
+  "build": { "frontendDist": "../../web" },
+  "app": { "withGlobalTauri": true, "windows": [{ "title": "Tauri Runtime Benchmark", "width": 1080, "height": 720, "resizable": false }] },
+  "bundle": { "active": false, "icon": [] }
+}

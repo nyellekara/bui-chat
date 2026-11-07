@@ -1,0 +1,35 @@
+{
+  "name": "bui-chat",
+  "version": "1.0.0",
+  "description": "BUI Chat: A Native Desktop AI Chat Application using BUI + React + Sarvam 105B",
+  "main": "src/index.jsx",
+  "scripts": {
+    "start": "tsx src/index.jsx",
+    "start:node": "node --import tsx src/index.jsx",
+    "start:bun": "bun src/index.jsx",
+    "build:exe": "node node_modules/@blender-ui/native/cli.js build src/index.jsx -o bui-chat.exe --bun --console",
+    "test": "node --import tsx test_chat_flow.jsx",
+    "test:e2e": "node --import tsx test_app_e2e.jsx"
+  },
+  "keywords": [
+    "bui",
+    "blender",
+    "react",
+    "sarvam",
+    "desktop",
+    "native",
+    "ai"
+  ],
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "type": "commonjs",
+  "dependencies": {
+    "@blender-ui/native": "^0.3.1",
+    "@blender-ui/react": "^0.3.1",
+    "dotenv": "^18.0.9",
+    "react": "^19.3.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

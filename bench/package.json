@@ -1,0 +1,6 @@
+{
+  "name": "bui-runtime-bench",
+  "private": true,
+  "type": "commonjs",
+  "scripts": { "bui": "node --import tsx bench/bui.jsx" }
+}

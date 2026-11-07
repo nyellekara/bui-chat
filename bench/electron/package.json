@@ -1,0 +1,7 @@
+{
+  "name": "bui-runtime-bench-electron",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": { "bench": "electron ." },
+  "devDependencies": { "electron": "^39.0.0" }
+}

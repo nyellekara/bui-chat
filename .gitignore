@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.tmp
+*.raw
+*.log
+docs_cache/
+bui-chat.exe
+bench/**/target/
+bench/*-result.json
+bench/electron/*-result.json
